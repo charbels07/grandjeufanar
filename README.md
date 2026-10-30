@@ -20,18 +20,26 @@ Logins aren't case-sensitive; passwords are. Passwords are kept only in the shee
 
 ## Setup (once)
 
+### 1. Attach the script to the sheet
+
 1. Open the Google Sheet, then go to **Extensions → Apps Script**.
 2. Replace everything in `Code.gs` with this repo's [`Code.gs`](Code.gs).
-3. Click **+ → HTML**, name the file `Index` (no extension), and paste in [`Index.html`](Index.html).
+3. Click **+ → HTML**, name the file `Index` (no extension), and paste in [`index.html`](index.html).
 4. Click **Save**, then **Deploy → New deployment**. Click the gear icon, choose **Web app**, and set:
    - **Execute as:** Me
    - **Who has access:** Anyone
 5. Click **Deploy** and authorize the script. Google warns that the app isn't verified; click **Advanced → Go to … (unsafe)**. That warning is normal for your own script, and the script only has access to this one spreadsheet.
-6. Copy the **Web app URL**. That is the website link to give to the patrols.
+6. Copy the **Web app URL** (it ends in `/exec`). If it differs from `API_URL` near the top of the script in `index.html`, put the new URL there.
+
+### 2. Publish the website on GitHub Pages
+
+In this repository on GitHub, go to **Settings → Pages**. Under **Build and deployment**, choose **Deploy from a branch**, pick the branch that holds these files and the `/ (root)` folder, then click **Save**. After a minute or two, the site is at **https://charbels07.github.io/grandjeufanar/**, and that is the link to give to the patrols.
+
+The `/exec` link from step 1 shows the same website too. The GitHub link is shorter, has no Google banner, and isn't affected by Google's "unable to open the file" error when a browser is signed into several Google accounts.
 
 ## Updating the code later
 
-Paste the new code into Apps Script, then go to **Deploy → Manage deployments**, click the pencil, set **Version** to **New version**, and click **Deploy**. The URL stays the same. If you create a *new* deployment instead, you get a new URL.
+Paste the new `Code.gs` into Apps Script, then go to **Deploy → Manage deployments**, click the pencil, set **Version** to **New version**, and click **Deploy**. The `/exec` URL stays the same. If you create a *new* deployment instead, you get a new URL and must update `API_URL` in `index.html`.
 
 You don't need to redeploy after editing challenges, locations or passwords in the sheet. The website reads the sheet live.
 

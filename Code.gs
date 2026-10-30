@@ -26,6 +26,20 @@ function doGet() {
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
+// JSON entry point for the copy of the site hosted on GitHub Pages: { fn, args } -> { ok, value | error }.
+function doPost(e) {
+  const api = { login: login, getData: getData, setStatus: setStatus };
+  let body;
+  try {
+    const req = JSON.parse(e.postData.contents);
+    if (!Object.prototype.hasOwnProperty.call(api, req.fn)) throw new Error('Action inconnue : ' + req.fn);
+    body = { ok: true, value: api[req.fn].apply(null, req.args || []) };
+  } catch (err) {
+    body = { ok: false, error: err.message };
+  }
+  return ContentService.createTextOutput(JSON.stringify(body)).setMimeType(ContentService.MimeType.JSON);
+}
+
 // ---------- Called from Index.html with google.script.run ----------
 
 function login(username, password) {
