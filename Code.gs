@@ -20,7 +20,12 @@ const SESSION_MS = 7 * 24 * 3600 * 1000;
 const MAX_LOGIN_FAILURES = 10; // per identifiant, per 10 minutes
 const SESSION_EXPIRED = 'Session expirée, reconnectez-vous.';
 
-function doGet() {
+function doGet(e) {
+  // Open <web app URL>?ping=1 to check that this deployment runs the latest code and is public.
+  if (e && e.parameter && e.parameter.ping) {
+    return ContentService.createTextOutput(JSON.stringify({ ok: true, message: 'Le serveur fonctionne.' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
   return HtmlService.createHtmlOutputFromFile('Index')
     .setTitle('Grand Jeu Fanar')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
