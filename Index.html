@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f3eddf;
+    --card: #fffdf7;
+    --ink: #23301f;
+    --muted: #6d7062;
+    --line: #e2d9c4;
+    --forest: #2c5a3c;
+    --ok: #23804c;
+    --ok-bg: #e2f2e7;
+    --no: #b83a2c;
+    --no-bg: #fbe4df;
+    --todo: #8a7a4f;
+    --todo-bg: #f1ead7;
+    --accent: var(--forest);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.45 Nunito, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  h1, h2, .display { font-family: "Baloo 2", Nunito, system-ui, sans-serif; line-height: 1.1; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 16px 16px 40px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); }
+
+  /* ---------- Login ---------- */
+  .login { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; }
+  .login .card { width: 100%; max-width: 380px; padding: 28px 24px 24px; text-align: center; }
+  .crest { font-size: 44px; line-height: 1; }
+  .login h1 { margin: 10px 0 4px; font-size: 32px; color: var(--forest); }
+  .login p { margin: 0 0 22px; color: var(--muted); }
+  .field { display: block; text-align: left; margin-bottom: 14px; font-weight: 700; font-size: 14px; }
+  .field input {
+    display: block; width: 100%; margin-top: 6px; padding: 12px 14px;
+    font: inherit; font-weight: 400; font-size: 16px; color: var(--ink);
+    background: #fff; border: 1.5px solid var(--line); border-radius: 12px; outline: none;
+  }
+  .field input:focus { border-color: var(--forest); box-shadow: 0 0 0 3px rgba(44, 90, 60, .15); }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 13px 16px; border: 0; border-radius: 12px;
+    background: var(--forest); color: #fff; font-weight: 800; font-size: 16px;
+  }
+  .btn:disabled { opacity: .6; cursor: default; }
+  .error { margin: 14px 0 0; color: var(--no); font-weight: 700; font-size: 14px; min-height: 1em; }
+
+  /* ---------- Top bar ---------- */
+  .top {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 14px 16px; border-radius: var(--radius); background: var(--accent); color: #fff;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .brand .emoji {
+    flex: none; width: 52px; height: 52px; display: grid; place-items: center;
+    font-size: 30px; background: rgba(255, 255, 255, .18); border-radius: 14px;
+  }
+  .brand small { display: block; font-weight: 700; opacity: .85; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; }
+  .brand h1 { margin: 0; font-size: 28px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ghost {
+    flex: none; border: 1.5px solid rgba(255, 255, 255, .55); background: transparent; color: #fff;
+    border-radius: 10px; padding: 8px 12px; font-weight: 700; font-size: 14px;
+  }
+  .top-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+  a.ghost { text-decoration: none; }
+
+  /* ---------- Location card ---------- */
+  .lieu { margin-top: 14px; padding: 20px; text-align: center; position: relative; overflow: hidden; }
+  .lieu .kicker { font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); }
+  .lieu .name { font-size: clamp(28px, 8vw, 40px); margin: 6px 0 4px; color: var(--ink); overflow-wrap: anywhere; }
+  .lieu.locked .name { color: var(--muted); }
+  .lieu .hint { color: var(--muted); margin: 0; }
+  .bar { height: 10px; border-radius: 99px; background: var(--todo-bg); margin: 14px 0 8px; overflow: hidden; }
+  .bar span { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width .5s ease; }
+  .previous { margin: 14px 0 0; padding-top: 12px; border-top: 1px dashed var(--line); color: var(--muted); font-size: 14px; }
+  .previous b { color: var(--ink); }
+  .lieu.unlocked { border: 2px solid var(--accent); }
+
+  /* ---------- Stats & lists ---------- */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+  .stat { padding: 12px 8px; text-align: center; border-radius: 14px; }
+  .stat b { display: block; font-family: "Baloo 2", Nunito, sans-serif; font-size: 30px; line-height: 1; }
+  .stat span { font-size: 13px; font-weight: 700; }
+  .stat.todo { background: var(--todo-bg); color: var(--todo); }
+  .stat.no { background: var(--no-bg); color: var(--no); }
+  .stat.ok { background: var(--ok-bg); color: var(--ok); }
+
+  .group { margin-top: 22px; }
+  .group h2 { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 22px; }
+  .group h2 .count { font-family: Nunito, sans-serif; font-size: 13px; font-weight: 800; padding: 2px 9px; border-radius: 99px; }
+  .group.todo h2 .count { background: var(--todo-bg); color: var(--todo); }
+  .group.no h2 .count { background: var(--no-bg); color: var(--no); }
+  .group.ok h2 .count { background: var(--ok-bg); color: var(--ok); }
+  .list { list-style: none; margin: 0; padding: 0; }
+  .item {
+    display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; margin-bottom: 8px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px; font-weight: 600;
+  }
+  .item .mark {
+    flex: none; width: 26px; height: 26px; display: grid; place-items: center;
+    border-radius: 50%; font-size: 14px; font-weight: 800;
+  }
+  .item.todo .mark { border: 2px solid var(--line); }
+  .item.ok .mark { background: var(--ok); color: #fff; }
+  .item.no .mark { background: var(--no); color: #fff; }
+  .item.ok .label { color: var(--muted); }
+  .item.no .label { color: var(--no); }
+  .item .label { padding-top: 2px; overflow-wrap: anywhere; }
+  .empty { color: var(--muted); font-style: italic; margin: 0; padding: 4px 2px; }
+  .foot { margin-top: 26px; text-align: center; color: var(--muted); font-size: 13px; }
+  .foot .offline { color: var(--no); font-weight: 700; }
+
+  /* ---------- Admin ---------- */
+  .tabs { display: flex; gap: 8px; margin-top: 14px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex: none; display: flex; align-items: center; gap: 6px; padding: 9px 14px;
+    background: var(--card); border: 1.5px solid var(--line); border-radius: 99px; font-weight: 800; font-size: 15px;
+  }
+  .tab small { font-weight: 700; color: var(--muted); font-size: 12px; }
+  .tab[aria-selected="true"] { background: var(--tab-color); border-color: var(--tab-color); color: #fff; }
+  .tab[aria-selected="true"] small { color: rgba(255, 255, 255, .85); }
+  .panel-head { display: flex; align-items: center; gap: 12px; margin-top: 18px; }
+  .panel-head .emoji { font-size: 34px; }
+  .panel-head h2 { margin: 0; font-size: 30px; color: var(--accent); }
+  .lieux-admin { margin-top: 12px; padding: 14px 16px; }
+  .lieux-admin h3 { margin: 0 0 8px; font-size: 14px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .lieu-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 0; border-top: 1px dashed var(--line); }
+  .lieu-row:first-of-type { border-top: 0; }
+  .lieu-row .who { min-width: 0; overflow-wrap: anywhere; }
+  .lieu-row .who small { display: block; color: var(--muted); font-weight: 700; font-size: 12px; }
+  .badge { flex: none; font-size: 12px; font-weight: 800; padding: 3px 10px; border-radius: 99px; }
+  .badge.on { background: var(--ok-bg); color: var(--ok); }
+  .badge.off { background: var(--todo-bg); color: var(--todo); }
+  .admin-item { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; margin-bottom: 8px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
+  .admin-item .label { font-weight: 700; flex: 1 1 220px; overflow-wrap: anywhere; }
+  .admin-item.saving { opacity: .65; }
+  .seg { display: inline-flex; flex: none; border: 1.5px solid var(--line); border-radius: 10px; overflow: hidden; background: #fff; }
+  .seg button { border: 0; background: transparent; padding: 8px 12px; font-weight: 800; font-size: 14px; color: var(--muted); }
+  .seg button + button { border-left: 1.5px solid var(--line); }
+  .seg button[aria-pressed="true"].todo { background: var(--todo-bg); color: var(--todo); }
+  .seg button[aria-pressed="true"].ok { background: var(--ok); color: #fff; }
+  .seg button[aria-pressed="true"].no { background: var(--no); color: #fff; }
+  .seg button:focus-visible, .tab:focus-visible, .btn:focus-visible, .ghost:focus-visible { outline: 3px solid #e0a526; outline-offset: 2px; }
+
+  /* ---------- Reveal overlay & toast ---------- */
+  .reveal {
+    position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 16px;
+    background: rgba(20, 30, 20, .72); animation: fade .3s ease;
+  }
+  .reveal .card { width: 100%; max-width: 420px; padding: 30px 22px 22px; text-align: center; animation: pop .5s cubic-bezier(.2, 1.4, .4, 1); border: 3px solid var(--accent); }
+  .reveal .pin { font-size: 56px; line-height: 1; animation: bounce 1.2s ease infinite; }
+  .reveal .kicker { margin: 12px 0 0; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); }
+  .reveal h2 { margin: 8px 0 22px; font-size: clamp(30px, 9vw, 44px); overflow-wrap: anywhere; }
+  .toast {
+    position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 20;
+    max-width: calc(100% - 32px); padding: 12px 16px; border-radius: 12px;
+    background: var(--ink); color: #fff; font-weight: 700; box-shadow: 0 6px 24px rgba(0, 0, 0, .25);
+  }
+  .loading { min-height: 100vh; display: grid; place-items: center; color: var(--muted); font-weight: 700; }
+  @keyframes fade { from { opacity: 0; } }
+  @keyframes pop { from { transform: scale(.6); opacity: 0; } }
+  @keyframes bounce { 50% { transform: translateY(-8px); } }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div id="app"><div class="loading">Chargement…</div></div>
+<div id="overlay"></div>
+<script>
+  const THEMES = {
+    requin: { emoji: '🦈', color: '#1f6aa0' },
+    faucon: { emoji: '🦅', color: '#a65a1c' },
+    bison: { emoji: '🦬', color: '#74472c' },
+    leops: { emoji: '🐆', color: '#b07a00' },
+    panda: { emoji: '🐼', color: '#383838' },
+  };
+  const ADMIN_THEME = { emoji: '⚜️', color: '#2c5a3c' };
+  const REFRESH_MS = { patrol: 15000, admin: 20000 };
+  const SESSION_EXPIRED = /reconnectez-vous/i;
+
+  const app = document.getElementById('app');
+  const overlay = document.getElementById('overlay');
+
+  // localStorage can be unavailable inside the Apps Script iframe; the site still works without it.
+  const store = {
+    get(key) { try { return JSON.parse(localStorage.getItem('gjf:' + key)); } catch (e) { return null; } },
+    set(key, value) { try { localStorage.setItem('gjf:' + key, JSON.stringify(value)); } catch (e) {} },
+    remove(key) { try { localStorage.removeItem('gjf:' + key); } catch (e) {} },
+  };
+
+  const state = {
+    token: store.get('token'),
+    data: null,
+    tab: store.get('tab'),
+    pending: {},     // "patrolKey:row" -> { status, seq } for admin writes not yet confirmed
+    writeSeq: 0,
+    refreshing: false,
+    updatedAt: null,
+    offline: false,
+    timer: null,
+  };
+
+  function call(fn, ...args) {
+    return new Promise((resolve, reject) => {
+      google.script.run
+        .withSuccessHandler(resolve)
+        .withFailureHandler(err => {
+          const msg = String((err && err.message) || err || 'Erreur inconnue');
+          reject(new Error(msg.replace(/^(Error|Exception|ScriptError):\s*/i, '')));
+        })[fn](...args);
+    });
+  }
+
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const theme = key => THEMES[key] || ADMIN_THEME;
+  const plural = (n, word) => n + ' ' + word + (n > 1 ? 's' : '');
+
+  // Counts, unlocked locations and progress for one patrol, including admin edits still in flight.
+  function summarize(p) {
+    const challenges = p.challenges.map(c => {
+      const pending = state.pending[p.key + ':' + c.row];
+      return pending ? Object.assign({}, c, { status: pending.status, saving: true }) : c;
+    });
+    const by = status => challenges.filter(c => c.status === status);
+    const accepted = by('accepted').length;
+    let unlocked = p.locations;
+    let next = p.nextThreshold;
+    if (state.data.role === 'admin') {
+      unlocked = p.locations.filter(l => l.threshold <= accepted);
+      const n = p.locations.find(l => l.threshold > accepted);
+      next = n ? n.threshold : null;
+    }
+    const prev = unlocked.length ? unlocked[unlocked.length - 1].threshold : 0;
+    return {
+      p, challenges, accepted, unlocked, next,
+      todo: by('pending'), rejected: by('rejected'), done: by('accepted'),
+      progress: next ? Math.max(0, Math.min(1, (accepted - prev) / (next - prev))) : 1,
+    };
+  }
+
+  // ---------- Rendering ----------
+
+  function render() {
+    if (!state.token) return renderLogin();
+    if (!state.data) { app.innerHTML = '<div class="loading">Chargement…</div>'; return; }
+    if (state.data.role === 'admin') renderAdmin(); else renderPatrol();
+  }
+
+  function renderLogin(message) {
+    stopRefresh();
+    app.innerHTML = `
+      <main class="login">
+        <form class="card" id="login-form" autocomplete="on">
+          <div class="crest">⚜️</div>
+          <h1>Grand Jeu Fanar</h1>
+          <p>Connecte-toi avec le compte de ta patrouille.</p>
+          <label class="field">Identifiant
+            <input id="user" name="username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required>
+          </label>
+          <label class="field">Mot de passe
+            <input id="pass" name="password" type="password" autocomplete="current-password" required>
+          </label>
+          <button class="btn" id="login-btn" type="submit">Se connecter</button>
+          <p class="error" id="login-error" role="alert">${message ? esc(message) : ''}</p>
+        </form>
+      </main>`;
+    document.getElementById('user').focus();
+  }
+
+  function locationCard(s) {
+    if (!s.unlocked.length && !s.next) return '';
+    const latest = s.unlocked[s.unlocked.length - 1];
+    const remaining = s.next ? s.next - s.accepted : 0;
+    const progress = s.next
+      ? `<div class="bar"><span style="width:${Math.round(s.progress * 100)}%"></span></div>
+         <p class="hint">Encore <b>${plural(remaining, 'défi')} validé${remaining > 1 ? 's' : ''}</b> pour ${latest ? 'le prochain lieu' : 'découvrir le lieu'}.</p>`
+      : `<p class="hint">Tous les lieux sont débloqués 🎉</p>`;
+    const earlier = s.unlocked.slice(0, -1).reverse();
+    return `
+      <section class="card lieu ${latest ? 'unlocked' : 'locked'}" aria-live="polite">
+        <div class="kicker">${latest ? '📍 Votre lieu' : '🔒 Lieu secret'}</div>
+        <div class="name display">${latest ? esc(latest.name) : '? ? ?'}</div>
+        ${progress}
+        ${earlier.length ? `<p class="previous">Lieux précédents : ${earlier.map(l => `<b>${esc(l.name)}</b>`).join(' · ')}</p>` : ''}
+      </section>`;
+  }
+
+  function group(cls, title, items, mark, emptyText) {
+    return `
+      <section class="group ${cls}">
+        <h2>${title} <span class="count">${items.length}</span></h2>
+        ${items.length
+          ? `<ul class="list">${items.map(c => `<li class="item ${cls}"><span class="mark" aria-hidden="true">${mark}</span><span class="label">${esc(c.name)}</span></li>`).join('')}</ul>`
+          : `<p class="empty">${emptyText}</p>`}
+      </section>`;
+  }
+
+  function footer() {
+    const time = state.updatedAt ? state.updatedAt.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '';
+    return `<p class="foot">${state.offline
+      ? '<span class="offline">Connexion perdue — nouvel essai automatique…</span>'
+      : `Mise à jour automatique · ${time}`}</p>`;
+  }
+
+  function renderPatrol() {
+    const s = summarize(state.data.patrol);
+    const t = theme(s.p.key);
+    document.documentElement.style.setProperty('--accent', t.color);
+    app.innerHTML = `
+      <div class="wrap">
+        <header class="top">
+          <div class="brand"><span class="emoji">${t.emoji}</span>
+            <div><small>Patrouille</small><h1>${esc(s.p.name)}</h1></div></div>
+          <button class="ghost" data-action="logout">Déconnexion</button>
+        </header>
+        ${locationCard(s)}
+        <div class="stats">
+          <div class="stat todo"><b>${s.todo.length}</b><span>À faire</span></div>
+          <div class="stat no"><b>${s.rejected.length}</b><span>Refusés</span></div>
+          <div class="stat ok"><b>${s.done.length}</b><span>Validés</span></div>
+        </div>
+        ${group('todo', 'À faire', s.todo, '', 'Plus aucun défi à faire !')}
+        ${group('no', 'Refusés', s.rejected, '✕', 'Aucun défi refusé.')}
+        ${group('ok', 'Validés', s.done, '✓', 'Aucun défi validé pour l’instant.')}
+        ${footer()}
+      </div>`;
+    revealNewLocation(s);
+  }
+
+  function renderAdmin() {
+    const patrols = state.data.patrols;
+    if (!patrols.some(p => p.key === state.tab)) state.tab = patrols[0].key;
+    const s = summarize(patrols.find(p => p.key === state.tab));
+    const t = theme(s.p.key);
+    const focused = document.activeElement && document.activeElement.dataset.focusKey;
+    document.documentElement.style.setProperty('--accent', ADMIN_THEME.color);
+    app.innerHTML = `
+      <div class="wrap">
+        <header class="top">
+          <div class="brand"><span class="emoji">${ADMIN_THEME.emoji}</span>
+            <div><small>Admin</small><h1>${esc(state.data.user)}</h1></div></div>
+          <div class="top-actions">
+            ${state.data.sheetUrl ? `<a class="ghost" href="${esc(state.data.sheetUrl)}" target="_blank" rel="noopener">Feuille</a>` : ''}
+            <button class="ghost" data-action="logout">Déconnexion</button>
+          </div>
+        </header>
+        <nav class="tabs" role="tablist">
+          ${patrols.map(p => {
+            const ps = summarize(p);
+            return `<button class="tab" role="tab" data-action="tab" data-key="${p.key}" data-focus-key="tab:${p.key}"
+                      aria-selected="${p.key === state.tab}" style="--tab-color:${theme(p.key).color}">
+                      <span>${theme(p.key).emoji}</span>${esc(p.name)} <small>${ps.accepted}/${p.challenges.length}</small></button>`;
+          }).join('')}
+        </nav>
+        <div style="--accent:${t.color}">
+          <div class="panel-head"><span class="emoji">${t.emoji}</span><h2>${esc(s.p.name)}</h2></div>
+          <div class="stats">
+            <div class="stat todo"><b>${s.todo.length}</b><span>À faire</span></div>
+            <div class="stat no"><b>${s.rejected.length}</b><span>Refusés</span></div>
+            <div class="stat ok"><b>${s.done.length}</b><span>Validés</span></div>
+          </div>
+          <section class="card lieux-admin">
+            <h3>Lieux affichés à la patrouille</h3>
+            ${s.p.locations.length ? s.p.locations.map(l => {
+              const on = l.threshold <= s.accepted;
+              return `<div class="lieu-row"><div class="who"><small>${plural(l.threshold, 'défi')} validé${l.threshold > 1 ? 's' : ''}</small>${esc(l.name)}</div>
+                      <span class="badge ${on ? 'on' : 'off'}">${on ? 'Affiché' : 'Verrouillé'}</span></div>`;
+            }).join('') : '<p class="empty">Aucun lieu pour cette patrouille dans l’onglet Lieux.</p>'}
+          </section>
+          <section class="group">
+            <h2>Défis</h2>
+            ${s.challenges.length ? `<ul class="list">${s.challenges.map(c => `
+              <li class="admin-item${c.saving ? ' saving' : ''}">
+                <span class="label">${esc(c.name)}</span>
+                <span class="seg" role="group" aria-label="Statut de ${esc(c.name)}">
+                  ${segButton(s.p.key, c, 'pending', 'todo', 'À faire')}
+                  ${segButton(s.p.key, c, 'accepted', 'ok', '✓ Valider')}
+                  ${segButton(s.p.key, c, 'rejected', 'no', '✕ Refuser')}
+                </span>
+              </li>`).join('')}</ul>` : '<p class="empty">Aucun défi dans l’onglet Défis.</p>'}
+          </section>
+        </div>
+        ${footer()}
+      </div>`;
+    if (focused) {
+      const el = app.querySelector(`[data-focus-key="${focused}"]`);
+      if (el) el.focus();
+    }
+  }
+
+  function segButton(patrolKey, c, status, cls, label) {
+    return `<button class="${cls}" data-action="status" data-patrol="${patrolKey}" data-row="${c.row}" data-status="${status}"
+              data-focus-key="${patrolKey}:${c.row}:${status}" aria-pressed="${c.status === status}">${label}</button>`;
+  }
+
+  // Full-screen announcement the first time this device sees a newly unlocked location.
+  function revealNewLocation(s) {
+    const seenKey = 'seen:' + s.p.key;
+    const seen = store.get(seenKey) || [];
+    const fresh = s.unlocked.filter(l => !seen.includes(l.threshold + '|' + l.name));
+    if (!fresh.length || overlay.innerHTML) return;
+    store.set(seenKey, seen.concat(fresh.map(l => l.threshold + '|' + l.name)));
+    const latest = fresh[fresh.length - 1];
+    overlay.innerHTML = `
+      <div class="reveal" role="dialog" aria-modal="true" aria-labelledby="reveal-name">
+        <div class="card">
+          <div class="pin">📍</div>
+          <p class="kicker">Nouveau lieu débloqué !</p>
+          <h2 id="reveal-name">${esc(latest.name)}</h2>
+          <button class="btn" data-action="close-reveal" style="background:var(--accent)">C’est parti !</button>
+        </div>
+      </div>`;
+    overlay.querySelector('button').focus();
+    try { navigator.vibrate && navigator.vibrate([200, 100, 200]); } catch (e) {}
+  }
+
+  function toast(message) {
+    const el = document.createElement('div');
+    el.className = 'toast';
+    el.setAttribute('role', 'alert');
+    el.textContent = message;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 4500);
+  }
+
+  // ---------- Data ----------
+
+  function setData(data) {
+    state.data = data;
+    state.updatedAt = new Date();
+    state.offline = false;
+    render();
+  }
+
+  function handleError(err) {
+    if (SESSION_EXPIRED.test(err.message)) return logout(err.message);
+    toast(err.message);
+  }
+
+  async function refresh() {
+    if (!state.token || state.refreshing || document.hidden) return;
+    state.refreshing = true;
+    const seq = state.writeSeq;
+    try {
+      const data = await call('getData', state.token);
+      // Drop the result if an admin edit started meanwhile: it may predate that edit.
+      if (state.token && seq === state.writeSeq && !Object.keys(state.pending).length) setData(data);
+    } catch (err) {
+      if (SESSION_EXPIRED.test(err.message)) logout(err.message);
+      else if (state.data) { state.offline = true; render(); }
+      else toast(err.message);
+    } finally {
+      state.refreshing = false;
+    }
+  }
+
+  function startRefresh() {
+    stopRefresh();
+    state.timer = setInterval(refresh, REFRESH_MS[state.data && state.data.role] || REFRESH_MS.patrol);
+  }
+
+  function stopRefresh() {
+    clearInterval(state.timer);
+    state.timer = null;
+  }
+
+  async function setStatus(patrolKey, row, status) {
+    const patrol = state.data.patrols.find(p => p.key === patrolKey);
+    const challenge = patrol.challenges.find(c => c.row === row);
+    const key = patrolKey + ':' + row;
+    const seq = ++state.writeSeq;
+    state.pending[key] = { status, seq };
+    render();
+    try {
+      const data = await call('setStatus', state.token, patrolKey, row, challenge.name, status);
+      if (state.pending[key] && state.pending[key].seq === seq) delete state.pending[key];
+      setData(data);
+    } catch (err) {
+      if (state.pending[key] && state.pending[key].seq === seq) delete state.pending[key];
+      render();
+      handleError(err);
+    }
+  }
+
+  async function login(form) {
+    const btn = document.getElementById('login-btn');
+    const error = document.getElementById('login-error');
+    btn.disabled = true;
+    btn.textContent = 'Connexion…';
+    error.textContent = '';
+    try {
+      const res = await call('login', form.username.value, form.password.value);
+      state.token = res.token;
+      store.set('token', res.token);
+      setData(res.data);
+      startRefresh();
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Se connecter';
+      error.textContent = err.message;
+    }
+  }
+
+  function logout(message) {
+    state.token = null;
+    state.data = null;
+    state.pending = {};
+    store.remove('token');
+    overlay.innerHTML = '';
+    document.documentElement.style.removeProperty('--accent');
+    renderLogin(typeof message === 'string' ? message : '');
+  }
+
+  // ---------- Events ----------
+
+  app.addEventListener('submit', e => {
+    if (e.target.id === 'login-form') { e.preventDefault(); login(e.target); }
+  });
+
+  document.addEventListener('click', e => {
+    const el = e.target.closest('[data-action]');
+    if (!el) return;
+    const action = el.dataset.action;
+    if (action === 'logout') logout();
+    else if (action === 'retry') loadInitial();
+    else if (action === 'close-reveal') overlay.innerHTML = '';
+    else if (action === 'tab') { state.tab = el.dataset.key; store.set('tab', state.tab); render(); }
+    else if (action === 'status' && el.getAttribute('aria-pressed') !== 'true') {
+      setStatus(el.dataset.patrol, Number(el.dataset.row), el.dataset.status);
+    }
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && overlay.innerHTML) overlay.innerHTML = '';
+  });
+
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
+
+  async function loadInitial() {
+    app.innerHTML = '<div class="loading">Chargement…</div>';
+    try {
+      setData(await call('getData', state.token));
+      startRefresh();
+    } catch (err) {
+      if (SESSION_EXPIRED.test(err.message)) return logout(err.message);
+      app.innerHTML = `
+        <main class="login"><div class="card">
+          <div class="crest">⚠️</div>
+          <p class="error">${esc(err.message)}</p>
+          <p></p>
+          <button class="btn" data-action="retry">Réessayer</button>
+        </div></main>`;
+    }
+  }
+
+  if (state.token) loadInitial(); else renderLogin();
+</script>
+</body>
+</html>
